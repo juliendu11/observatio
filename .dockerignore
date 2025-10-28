@@ -1,0 +1,16 @@
+node_modules
+logs
+tests
+.idea
+.claude
+
+docker-compose.dev.yml
+docker-compose.prod.yml
+
+storage/*
+!storage/.gitkeep
+!storage/test.mp4
+
+!tests/browser/pages/logs/
+
+test_results

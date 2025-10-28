@@ -1,0 +1,60 @@
+import app from '@adonisjs/core/services/app'
+import { HttpContext, ExceptionHandler } from '@adonisjs/core/http'
+import type { StatusPageRange, StatusPageRenderer } from '@adonisjs/core/types/http'
+
+export default class HttpExceptionHandler extends ExceptionHandler {
+  /**
+   * In debug mode, the exception handler will display verbose errors
+   * with pretty printed stack traces.
+   */
+  protected debug = !app.inProduction
+
+  /**
+   * Status alerts are used to display a custom HTML alerts for certain error
+   * codes. You might want to enable them in production only, but feel
+   * free to enable them in development as well.
+   */
+  protected renderStatusPages = app.inProduction
+
+  /**
+   * Status alerts is a collection of error code range and a callback
+   * to return the HTML contents to send as a response.
+   */
+  protected statusPages: Record<StatusPageRange, StatusPageRenderer> = {
+    '404': (error, { inertia }) => inertia.render('errors/not_found', { error }),
+    '500..599': (error, { inertia }) => inertia.render('errors/server_error', { error }),
+  }
+
+  /**
+   * The method is used for handling errors and returning
+   * response to the client
+   */
+  async handle(error: any, ctx: HttpContext) {
+    if (ctx.request.url().startsWith('/api')) {
+      let response: { code: string; errors: any[] } = {
+        code: error.code,
+        errors: [],
+      }
+
+      if (error.messages) {
+        response.errors = error.messages
+      } else {
+        response.errors.push({ message: error.message })
+      }
+
+      return ctx.response.status(error.status).send(response)
+    }
+
+    return super.handle(error, ctx)
+  }
+
+  /**
+   * The method is used to report error to the logging service or
+   * the a third party error monitoring service.
+   *
+   * @note You should not attempt to send a response from this method.
+   */
+  async report(error: unknown, ctx: HttpContext) {
+    return super.report(error, ctx)
+  }
+}

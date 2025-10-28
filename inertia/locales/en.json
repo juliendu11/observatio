@@ -1,0 +1,145 @@
+{
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "view": "View",
+    "actions": "Actions",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "email": "Email",
+    "password": "Password",
+    "you": "You"
+  },
+  "login": {
+    "title": "Login",
+    "form": {
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in"
+    }
+  },
+  "cameras": {
+    "title": "Cameras",
+    "add": "Add camera",
+    "card": {
+      "resolution": "Resolution",
+      "noPreview": "No preview",
+      "stop": "Stop",
+      "preview": "Preview",
+      "open": "Open",
+      "delete": "Delete"
+    },
+    "create": {
+      "title": "Add a camera",
+      "label": "Label",
+      "link": "Link",
+      "resolution": "Resolution",
+      "submit": "Add"
+    },
+    "show": {
+      "title": "Camera details",
+      "dailies": "Daily recordings",
+      "streaming": "Live streaming"
+    }
+  },
+  "users": {
+    "title": "Users",
+    "organizationTitle": "Organization Users",
+    "addUser": "Add a user",
+    "table": {
+      "email": "Email",
+      "generalPermissions": "General permissions",
+      "cameraPermissions": "Camera permissions",
+      "actions": "Actions",
+      "allPermissions": "ALL"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Password",
+      "canAddCamera": "Can add cameras",
+      "canAddUser": "Can add users",
+      "canUpdateSettings": "Can update settings",
+      "permissionsPerCamera": "Permissions per camera",
+      "canView": "View",
+      "canEdit": "Edit",
+      "canDelete": "Delete",
+      "submit": "Add user"
+    },
+    "delete": {
+      "title": "Delete confirmation",
+      "message": "Are you sure you want to delete the user",
+      "warning": "This action is irreversible.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
+    }
+  },
+  "metrics": {
+    "title": "System Metrics",
+    "liveUpdate": "Live updates every 2 seconds",
+    "cpu": {
+      "title": "CPU",
+      "usage": "Usage",
+      "cores": "Cores"
+    },
+    "memory": {
+      "title": "Memory",
+      "usage": "Usage",
+      "used": "Used",
+      "total": "Total",
+      "free": "Free"
+    },
+    "disk": {
+      "title": "Disk",
+      "usage": "Usage",
+      "used": "Used",
+      "total": "Total",
+      "free": "Free"
+    }
+  },
+  "logs": {
+    "title": "System Logs",
+    "files": {
+      "title": "Log Files"
+    },
+    "viewer": {
+      "noFileSelected": "No File Selected",
+      "selectFile": "Select a log file to view its content"
+    },
+    "table": {
+      "time": "Time",
+      "level": "Level",
+      "pid": "PID",
+      "hostname": "Hostname",
+      "message": "Message",
+      "errorDetails": "Error details",
+      "name": "Name",
+      "params": "Params"
+    },
+    "live": {
+      "title": "Live Logs",
+      "realtime": "Real-time",
+      "waiting": "Waiting for new logs...",
+      "clear": "Clear",
+      "autoScroll": "Auto-scroll"
+    }
+  },
+  "alerts": {
+    "title": "Alerts",
+    "telegram": {
+      "title": "Telegram Configuration",
+      "description": "Configure Telegram notifications to receive system alerts.",
+      "botToken": "Telegram Bot Token",
+      "chatId": "Telegram Chat ID",
+      "help": {
+        "title": "How to configure Telegram?",
+        "step1": "Create a bot with @BotFather on Telegram and get the token",
+        "step2": "Start a conversation with your bot",
+        "step3": "Get your Chat ID by sending a message to @userinfobot"
+      }
+    }
+  }
+}

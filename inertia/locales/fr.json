@@ -1,0 +1,145 @@
+{
+  "common": {
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "view": "Voir",
+    "actions": "Actions",
+    "confirm": "Confirmer",
+    "loading": "Chargement...",
+    "email": "Email",
+    "password": "Mot de passe",
+    "you": "Vous"
+  },
+  "login": {
+    "title": "Connexion",
+    "form": {
+      "email": "Email",
+      "password": "Mot de passe",
+      "submit": "Se connecter"
+    }
+  },
+  "cameras": {
+    "title": "Caméras",
+    "add": "Ajouter une caméra",
+    "card": {
+      "resolution": "Résolution",
+      "noPreview": "Pas de preview",
+      "stop": "Arrêter",
+      "preview": "Preview",
+      "open": "Ouvrir",
+      "delete": "Supprimer"
+    },
+    "create": {
+      "title": "Ajouter une caméra",
+      "label": "Nom",
+      "link": "Lien",
+      "resolution": "Résolution",
+      "submit": "Ajouter"
+    },
+    "show": {
+      "title": "Détails de la caméra",
+      "dailies": "Enregistrements quotidiens",
+      "streaming": "Streaming en direct"
+    }
+  },
+  "users": {
+    "title": "Utilisateurs",
+    "organizationTitle": "Utilisateurs de l'organisation",
+    "addUser": "Ajouter un utilisateur",
+    "table": {
+      "email": "Email",
+      "generalPermissions": "Permissions générales",
+      "cameraPermissions": "Permissions caméras",
+      "actions": "Actions",
+      "allPermissions": "TOUTES"
+    },
+    "form": {
+      "email": "Email",
+      "password": "Mot de passe",
+      "canAddCamera": "Peut ajouter des caméras",
+      "canAddUser": "Peut ajouter des utilisateurs",
+      "canUpdateSettings": "Peut modifier les paramètres",
+      "permissionsPerCamera": "Permissions par caméra",
+      "canView": "Voir",
+      "canEdit": "Modifier",
+      "canDelete": "Supprimer",
+      "submit": "Ajouter l'utilisateur"
+    },
+    "delete": {
+      "title": "Confirmation de suppression",
+      "message": "Êtes-vous sûr de vouloir supprimer l'utilisateur",
+      "warning": "Cette action est irréversible.",
+      "confirm": "Supprimer",
+      "cancel": "Annuler"
+    }
+  },
+  "metrics": {
+    "title": "Métriques Système",
+    "liveUpdate": "Mise à jour en direct toutes les 2 secondes",
+    "cpu": {
+      "title": "Processeur",
+      "usage": "Utilisation",
+      "cores": "Cœurs"
+    },
+    "memory": {
+      "title": "Mémoire",
+      "usage": "Utilisation",
+      "used": "Utilisée",
+      "total": "Total",
+      "free": "Libre"
+    },
+    "disk": {
+      "title": "Disque",
+      "usage": "Utilisation",
+      "used": "Utilisé",
+      "total": "Total",
+      "free": "Libre"
+    }
+  },
+  "logs": {
+    "title": "Journaux Système",
+    "files": {
+      "title": "Fichiers de logs"
+    },
+    "viewer": {
+      "noFileSelected": "Aucun fichier sélectionné",
+      "selectFile": "Sélectionnez un fichier de log pour afficher son contenu"
+    },
+    "table": {
+      "time": "Heure",
+      "level": "Niveau",
+      "pid": "PID",
+      "hostname": "Hôte",
+      "message": "Message",
+      "errorDetails": "Détails de l'erreur",
+      "name": "Nom",
+      "params": "Paramètres"
+    },
+    "live": {
+      "title": "Logs en direct",
+      "realtime": "Temps réel",
+      "waiting": "En attente de nouveaux logs...",
+      "clear": "Effacer",
+      "autoScroll": "Défilement automatique"
+    }
+  },
+  "alerts": {
+    "title": "Alertes",
+    "telegram": {
+      "title": "Configuration Telegram",
+      "description": "Configurez les notifications Telegram pour recevoir des alertes du système.",
+      "botToken": "Token du Bot Telegram",
+      "chatId": "ID du Chat Telegram",
+      "help": {
+        "title": "Comment configurer Telegram ?",
+        "step1": "Créez un bot avec @BotFather sur Telegram et récupérez le token",
+        "step2": "Démarrez une conversation avec votre bot",
+        "step3": "Récupérez votre Chat ID en envoyant un message à @userinfobot"
+      }
+    }
+  }
+}

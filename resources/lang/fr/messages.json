@@ -1,0 +1,12 @@
+{
+  "action_not_allowed": "Action non autorisée",
+  "settings_updated_success": "Paramètres mis à jour avec succès",
+  "camera_not_found": "Caméra introuvable",
+  "settings_not_found": "Paramètres introuvables",
+  "file_not_found": "Fichier introuvable",
+  "user_not_found": "Utilisateur introuvable",
+  "camera_deleted_success": "Caméra supprimée avec succès",
+  "user_deleted_success": "Utilisateur supprimé avec succès",
+  "user_added_success": "Utilisateur ajouté avec succès",
+  "camera_added_success": "Caméra ajoutée avec succès"
+}

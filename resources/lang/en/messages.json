@@ -1,0 +1,12 @@
+{
+  "action_not_allowed": "Unauthorized action",
+  "settings_updated_success": "Settings updated successfully",
+  "camera_not_found": "Camera not found",
+  "settings_not_found": "Settings not found",
+  "file_not_found": "File not found",
+  "user_not_found": "User not found",
+  "camera_deleted_success": "Camera deleted successfully",
+  "user_deleted_success": "User deleted successfully",
+  "user_added_success": "User added successfully",
+  "camera_added_success": "Camera added successfully"
+}
