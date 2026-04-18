@@ -23,16 +23,16 @@ const dbConfig = defineConfig({
         env.get('APP_TYPE') === 'job'
           ? {
               min: 1,
-              max: 4,
+              max: 3,
               idleTimeoutMillis: 30_000,
               acquireTimeoutMillis: 60_000,
               createRetryIntervalMillis: 200,
             }
           : {
-              min: 2,
-              max: 12,
+              min: 0,
+              max: 3,
               idleTimeoutMillis: 30_000,
-              acquireTimeoutMillis: 10_000,
+              acquireTimeoutMillis: 30_000,
               createRetryIntervalMillis: 200,
             },
     },
