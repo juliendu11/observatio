@@ -4,6 +4,7 @@ import { RecorderService } from '#services/recorder_service'
 import { RECORDING_CHANNELS } from '#services/recording_pubsub_service'
 import Camera from '#models/camera'
 import { executeCommand } from '#helpers/command_helper'
+import FFMPEGService from '#services/ffmpeg_service'
 
 export default class RecordingStart extends BaseCommand {
   static commandName = 'recording:start'
@@ -16,6 +17,7 @@ export default class RecordingStart extends BaseCommand {
   async run() {
     const logger = await this.app.container.make('logger')
     const subscriber = await this.app.container.make('redis')
+    const FFMPEGServiceInstance = await this.app.container.make(FFMPEGService)
 
     const currentLogger = logger.child({
       name: 'MetricsSchedulerService',
@@ -27,7 +29,7 @@ export default class RecordingStart extends BaseCommand {
       currentLogger.info(error, 'Error killing existing ffmpeg processes on startup')
     }
 
-    const recorderService = new RecorderService(logger)
+    const recorderService = new RecorderService(logger, FFMPEGServiceInstance)
     await recorderService.start()
 
     subscriber.subscribe(RECORDING_CHANNELS.CAMERA_ADD, async (message) => {

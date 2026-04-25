@@ -1,9 +1,27 @@
 import { exec } from 'node:child_process'
 
+export type CameraRecorderHealthCheckerConfig = {
+  interval?: {
+    runEvery: number
+  }
+  connect?: {
+    /**
+     * In seconds
+     */
+    timeout: number
+  }
+}
+
 export default class CameraRecorderHealthChecker {
   private readonly rtspLink: string
   private checkerTimer: NodeJS.Timeout | null = null
-  private checkerTimerTime = 5 * 60 * 1000
+
+  private readonly checkerTimerTime: number = 5 * 60 * 1000
+
+  /**
+   * In seconds
+   */
+  private readonly connectTimeout: number = 5
 
   private _isAlive: boolean = false
 
@@ -21,20 +39,27 @@ export default class CameraRecorderHealthChecker {
     }
   }
 
-  constructor(rtspLink: string) {
+  constructor(rtspLink: string, config?: CameraRecorderHealthCheckerConfig) {
     this.rtspLink = rtspLink
+
+    if (config && config.interval) {
+      this.checkerTimerTime = config.interval.runEvery
+    }
+    if (config && config.connect) {
+      this.connectTimeout = config.connect.timeout
+    }
   }
 
   private runCommand(): Promise<boolean> {
     return new Promise((resolve) => {
       exec(
-        `curl --head --silent --output /dev/null --show-error --fail --connect-timeout 5 -i -X OPTIONS ${this.rtspLink}`,
+        `curl --head --silent --output /dev/null --show-error --fail --connect-timeout ${this.connectTimeout} -i -X OPTIONS ${this.rtspLink}`,
         (err) => {
           if (err) {
-            resolve(this.isAlive)
+            resolve(false)
             return
           }
-          resolve(this.isAlive)
+          resolve(true)
         }
       )
     })

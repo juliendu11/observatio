@@ -4,8 +4,7 @@ import CameraRecorderHealthChecker from '#core/camera_recorder_health_checker'
 import CameraRecorderFileChecker from '#core/camera_recorder_file_checker'
 import { Logger } from '@adonisjs/core/logger'
 import { inject } from '@adonisjs/core'
-import env from '#start/env'
-import emitter from '@adonisjs/core/services/emitter'
+import FFMPEGService from '#services/ffmpeg_service'
 
 @inject()
 export class RecorderService {
@@ -13,8 +12,11 @@ export class RecorderService {
 
   private readonly logger: Logger
 
-  constructor(protected _logger: Logger) {
-    this.logger = _logger.child({
+  constructor(
+    protected mainLogger: Logger,
+    protected ffmpegService: FFMPEGService
+  ) {
+    this.logger = mainLogger.child({
       name: `RecorderService`,
     })
   }
@@ -37,21 +39,13 @@ export class RecorderService {
 
     const recorder = new CameraRecorder(
       camera,
+      this.ffmpegService,
       this.logger,
       new CameraRecorderHealthChecker(camera.link),
       new CameraRecorderFileChecker(camera.folder)
     )
 
-    if (!env.get('BLOCK_RECORDING')) {
-      recorder.aliveListener = (isAlive) => {
-        emitter.emit('camera:status', {
-          camera,
-          isAlive,
-        })
-      }
-
-      await recorder.start()
-    }
+    await recorder.start()
 
     this.recording.set(camera.id.toString(), recorder)
 

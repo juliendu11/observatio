@@ -1,5 +1,5 @@
 import Camera from '#models/camera'
-import { ChildProcessWithoutNullStreams, spawn } from 'node:child_process'
+import { ChildProcessWithoutNullStreams } from 'node:child_process'
 import { join } from 'node:path'
 import dayjs from 'dayjs'
 import { Logger } from '@adonisjs/core/logger'
@@ -7,9 +7,21 @@ import CameraRecorderHealthChecker from '#core/camera_recorder_health_checker'
 import CameraRecorderFileChecker from '#core/camera_recorder_file_checker'
 import { createFolderIfNotExist } from '#helpers/file_helper'
 import CameraDaily from '#models/camera_daily'
+import FFMPEGService from '#services/ffmpeg_service'
+import emitter from '@adonisjs/core/services/emitter'
 
-const SECONDS_BEFORE_RESTART = 5
 const SEGMENT_FILE_DURATION_IN_SECONDS = 60
+
+export type CameraRecorderConfig = {
+  timer?: {
+    beforeRestart?: {
+      /**
+       * In seconds
+       */
+      time: number
+    }
+  }
+}
 
 export default class CameraRecorder {
   private spawnOptions: string[] = []
@@ -19,9 +31,16 @@ export default class CameraRecorder {
   private restartedCount = 0
   private dayChangeTimer: NodeJS.Timeout | null = null
 
-  private logger: Logger
+  private readonly logger: Logger
   private healthChecker: CameraRecorderHealthChecker
   private fileChecker: CameraRecorderFileChecker
+  private ffmpegService: FFMPEGService
+
+  /**
+   * In seconds
+   * @private
+   */
+  private readonly SECONDS_BEFORE_RESTART: number = 5
 
   public blockRelaunch = false
 
@@ -36,6 +55,11 @@ export default class CameraRecorder {
   public set isAlive(value: boolean) {
     this._isAlive = value
 
+    emitter.emit('camera:status', {
+      camera: this.camera,
+      isAlive: value,
+    })
+
     if (this.aliveListener) {
       this.aliveListener(this._isAlive)
     }
@@ -43,11 +67,18 @@ export default class CameraRecorder {
 
   constructor(
     camera: Camera,
+    ffmpegService: FFMPEGService,
     parentLogger: Logger,
     healthChecker: CameraRecorderHealthChecker,
-    fileChecker: CameraRecorderFileChecker
+    fileChecker: CameraRecorderFileChecker,
+    config?: CameraRecorderConfig
   ) {
     this.camera = camera
+    this.ffmpegService = ffmpegService
+
+    if (config && config.timer && config.timer.beforeRestart) {
+      this.SECONDS_BEFORE_RESTART = config.timer.beforeRestart.time
+    }
 
     this.logger = parentLogger.child({
       name: `CameraRecorder:${camera.id}`,
@@ -102,41 +133,6 @@ export default class CameraRecorder {
 
     await createFolderIfNotExist(this.dayRecordingPath)
 
-    this.spawnOptions = [
-      '-hide_banner',
-      '-y',
-      '-loglevel',
-      'error',
-      '-rtsp_transport',
-      'tcp',
-      // '-stimeout',
-      '-timeout',
-      '5000000',
-      '-use_wallclock_as_timestamps',
-      '1',
-      '-i',
-      this.camera.link,
-      '-vf',
-      `scale=${this.camera.resolution.replace('x', ':')}`,
-      '-vcodec',
-      'libx264',
-      '-preset',
-      'veryfast',
-      '-crf',
-      '23',
-      '-r',
-      '30',
-      '-f',
-      'hls',
-      '-hls_time',
-      SEGMENT_FILE_DURATION_IN_SECONDS.toString(),
-      '-hls_list_size',
-      '0',
-      '-hls_segment_filename',
-      `${this.dayRecordingPath}/segment_%03d.ts`,
-      `${this.dayRecordingPath}/stream.m3u8`,
-    ]
-
     await CameraDaily.firstOrCreate(
       {
         cameraId: this.camera.id,
@@ -150,9 +146,16 @@ export default class CameraRecorder {
       }
     )
 
-    this.stream = spawn('ffmpeg', this.spawnOptions, {
-      detached: false,
-    })
+    const instance = this.ffmpegService.recordRTSPToHLS(
+      this.camera.link,
+      this.camera.resolution,
+      SEGMENT_FILE_DURATION_IN_SECONDS,
+      this.dayRecordingPath,
+      (err) => this.onStreamError(err),
+      (data) => this.onStreamExit(data)
+    )
+    this.stream = instance.process
+    this.spawnOptions = instance.args
 
     this.isAlive = true
 
@@ -160,16 +163,6 @@ export default class CameraRecorder {
       { processPid: this.stream?.pid, options: this.spawnOptions.join(' ') },
       'RTSP record running'
     )
-
-    this.stream.on('exit', (code) => this.onStreamExit(code))
-    this.stream.stdout.on('error', (chunk) => this.onStreamError(chunk))
-    this.stream.stderr.on('error', (chunk) => this.onStreamError(chunk))
-    this.stream.on('error', (error) => this.onStreamError(error))
-
-    this.stream.stdout.on('data', () => {})
-    this.stream.stderr.on('data', () => {})
-    this.stream.on('disconnect', () => {})
-    this.stream.on('close', () => {})
 
     this.healthChecker.start()
     this.fileChecker.start()
@@ -236,7 +229,7 @@ export default class CameraRecorder {
       this.restartedCount = 0
     }, 5000)
 
-    const secondsBeforeRestart = SECONDS_BEFORE_RESTART + this.restartedCount * 2
+    const secondsBeforeRestart = this.SECONDS_BEFORE_RESTART + this.restartedCount * 2
 
     this.logger.info({}, `Wait ${secondsBeforeRestart} seconds before restart`)
 
@@ -246,7 +239,7 @@ export default class CameraRecorder {
 
     this.restartedCount++
 
-    this.run()
+    await this.run()
   }
 
   private onStreamExit(code: number | null) {
@@ -265,7 +258,7 @@ export default class CameraRecorder {
 
   async stop() {
     if (this.stream) {
-      this.logger.info({ processPid: this.stream?.pid }, 'stop >> Stop process')
+      this.logger.info({ processPid: this.stream?.pid }, 'Stopping process')
 
       this.blockRelaunch = false
       this.kill()

@@ -64,7 +64,7 @@ export default class StreamingService {
     })
 
     ws.on('error', (error) => {
-      this.logger.error({ error }, 'WebSocket error occurred')
+      this.logger.error({ err: error }, 'WebSocket error occurred')
     })
   }
 
@@ -143,7 +143,7 @@ export default class StreamingService {
     })
 
     ff.on('error', (error) => {
-      this.logger.error(error, 'FFmpeg process error')
+      this.logger.error({ err: error }, 'FFmpeg process error')
 
       this.stopStream(streamId)
     })
@@ -172,7 +172,7 @@ export default class StreamingService {
       try {
         stream.process.kill('SIGINT')
       } catch (error) {
-        this.logger.error(error, 'Error stopping FFmpeg process')
+        this.logger.error({ err: error }, 'Error stopping FFmpeg process')
       }
 
       this.streams.delete(streamId)

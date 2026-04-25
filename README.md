@@ -44,7 +44,6 @@ See your surveillance cameras in one place.
 
 ## TODO
 
-- [ ] Add test alert message
 - [ ] Add tests daily rotation recording
 - [ ] Add tests hls to mp4 conversion
 - [ ] Add tests cleanup of old recordings

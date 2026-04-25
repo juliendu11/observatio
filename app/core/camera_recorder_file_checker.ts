@@ -1,14 +1,36 @@
 import { FSWatcher, watch } from 'node:fs'
 import dayjs from 'dayjs'
 
+export type CameraRecorderFileCheckerConfig = {
+  interval?: {
+    runEvery: number
+  }
+  checker?: {
+    /**
+     * minutes
+     * @private
+     */
+    timeSuperiorOf: number
+  }
+  time?: {
+    initial: Date
+  }
+}
+
 export default class CameraRecorderFileChecker {
   private readonly folderPath: string
+  private readonly checkerTimerTime = 5 * 60 * 1000
 
-  private lastChange: Date | null = null
+  /**
+   * minutes
+   * @private
+   */
+  private readonly checkDiffTime: number = 6
+
+  private lastChange: Date = new Date()
 
   private checkerTimerToLaunch: NodeJS.Timeout | null = null
   private checkerTimer: NodeJS.Timeout | null = null
-  private checkerTimerTime = 5 * 60 * 1000 + 10 * 1000
 
   private watcher: FSWatcher | null = null
 
@@ -28,8 +50,20 @@ export default class CameraRecorderFileChecker {
     }
   }
 
-  constructor(folderPath: string) {
+  constructor(folderPath: string, config?: CameraRecorderFileCheckerConfig) {
     this.folderPath = folderPath
+
+    if (config && config.checker) {
+      this.checkDiffTime = config.checker.timeSuperiorOf
+    }
+
+    if (config && config.interval) {
+      this.checkerTimerTime = config.interval.runEvery
+    }
+
+    if (config && config.time) {
+      this.lastChange = config.time.initial
+    }
   }
 
   private startWatcher() {
@@ -49,7 +83,7 @@ export default class CameraRecorderFileChecker {
       const currentDate = dayjs()
       const lastChangeParsedDate = dayjs(this.lastChange)
 
-      if (currentDate.diff(lastChangeParsedDate, 'minutes') > 5) {
+      if (currentDate.diff(lastChangeParsedDate, 'minutes') > this.checkDiffTime) {
         this.isAlive = false
       } else {
         this.isAlive = true

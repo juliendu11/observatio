@@ -7,6 +7,7 @@ import SystemLogsService from '#services/system_logs_service'
 import TelegramNotificationService from '#services/telegram_notification_service'
 import RecordingPubSubService from '#services/recording_pubsub_service'
 import Setting from '#models/setting'
+import FFMPEGService from '#services/ffmpeg_service'
 
 export default class WebProvider {
   constructor(protected app: ApplicationService) {}
@@ -15,6 +16,7 @@ export default class WebProvider {
    * Register bindings to the container
    */
   register() {
+    console.log('loaded')
     this.app.container.singleton(StreamingService, async (resolver) => {
       const logger = await resolver.make('logger')
 
@@ -48,6 +50,10 @@ export default class WebProvider {
       const sseService = await resolver.make(SSEService)
 
       return new MetricsSchedulerService(metricsService, sseService, logger)
+    })
+
+    this.app.container.singleton(FFMPEGService, () => {
+      return new FFMPEGService()
     })
   }
 
