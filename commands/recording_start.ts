@@ -20,7 +20,7 @@ export default class RecordingStart extends BaseCommand {
     const FFMPEGServiceInstance = await this.app.container.make(FFMPEGService)
 
     const currentLogger = logger.child({
-      name: 'MetricsSchedulerService',
+      name: 'RecordingStart',
     })
 
     try {
@@ -29,7 +29,7 @@ export default class RecordingStart extends BaseCommand {
       currentLogger.info(error, 'Error killing existing ffmpeg processes on startup')
     }
 
-    const recorderService = new RecorderService(logger, FFMPEGServiceInstance)
+    const recorderService = new RecorderService(currentLogger, FFMPEGServiceInstance)
     await recorderService.start()
 
     subscriber.subscribe(RECORDING_CHANNELS.CAMERA_ADD, async (message) => {

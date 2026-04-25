@@ -6,6 +6,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "node bin/server.js",
+    "start:recorder": "node ace recording:start",
+    "start:queue": "node ace queue:listen",
     "build": "node ace build",
     "dev": "node ace serve --hmr",
     "test": "node ace test",

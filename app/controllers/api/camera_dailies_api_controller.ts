@@ -9,6 +9,7 @@ import { HlsToMp4JobStatuses } from '#enums/HlsToMp4JobStatuses'
 import Camera from '#models/camera'
 import CameraPolicy from '#policies/camera_policy'
 import ActionNotAllowedException from '#exceptions/action_not_allowed_exception'
+import drive from '@adonisjs/drive/services/main'
 
 @inject()
 export default class CameraDailiesAPIController {
@@ -31,9 +32,12 @@ export default class CameraDailiesAPIController {
       .firstOrFail()
 
     if (cameraDaily.mp4Path) {
-      const p = app.makePath('storage', cameraDaily.mp4Path)
-      if (await fileExists(p)) {
-        return response.download(p)
+      const disk = drive.use()
+      try {
+        const url = await disk.getUrl(cameraDaily.mp4Path)
+        return url
+      } catch (error) {
+        console.log(error)
       }
     }
 

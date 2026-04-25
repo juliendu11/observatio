@@ -60,13 +60,12 @@ export default class HlsToMp4Job implements JobHandlerContract<HlsToMp4Payload> 
 
     cameraDaily.mp4Path = `/cameras/${camera.id}/${job.data.day}/mp4/output.mp4`
     cameraDaily.convertHlsToMp4JobStatus = HlsToMp4JobStatuses.DONE
+    await cameraDaily.save()
 
     const path = app.makePath('storage', cameraDaily.mp4Path)
     cameraDaily.mp4Path = path
 
     sseService.emitConvertHlsToMp4Status(cameraDaily)
-
-    await cameraDaily.save()
   }
 
   /**
