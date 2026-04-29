@@ -16,11 +16,15 @@ export default class WebProvider {
    * Register bindings to the container
    */
   register() {
-    console.log('loaded')
+    this.app.container.singleton(FFMPEGService, () => {
+      return new FFMPEGService()
+    })
+
     this.app.container.singleton(StreamingService, async (resolver) => {
       const logger = await resolver.make('logger')
+      const ffmpegService = await resolver.make(FFMPEGService)
 
-      return new StreamingService(logger)
+      return new StreamingService(logger, ffmpegService)
     })
 
     this.app.container.singleton(SystemMetricsService, () => {
@@ -50,10 +54,6 @@ export default class WebProvider {
       const sseService = await resolver.make(SSEService)
 
       return new MetricsSchedulerService(metricsService, sseService, logger)
-    })
-
-    this.app.container.singleton(FFMPEGService, () => {
-      return new FFMPEGService()
     })
   }
 

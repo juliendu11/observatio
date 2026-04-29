@@ -1,7 +1,8 @@
-import { ChildProcess, spawn } from 'node:child_process'
+import { ChildProcess } from 'node:child_process'
 import type { WebSocket } from 'ws'
 import { Logger } from '@adonisjs/core/logger'
 import { inject } from '@adonisjs/core'
+import FFMPEGService from '#services/ffmpeg_service'
 
 interface StreamCache {
   process: ChildProcess
@@ -9,12 +10,22 @@ interface StreamCache {
   initBuffer: Buffer[]
 }
 
+/**
+ * Live streaming management via WebSocket.
+ *
+ * Management logic to use the same ffmpeg process if multiple users want to view the same camera.
+ *
+ * Suppression of the ffmpeg process if there is no longer a live connection to the camera.
+ */
 @inject()
 export default class StreamingService {
   private streams: Map<string, StreamCache> = new Map()
   private logger: Logger
 
-  constructor(protected parentLogger: Logger) {
+  constructor(
+    protected parentLogger: Logger,
+    protected ffmpegService: FFMPEGService
+  ) {
     this.logger = parentLogger.child({
       name: `StreamingService`,
     })
@@ -73,94 +84,54 @@ export default class StreamingService {
     const initBuffer: Buffer[] = []
     let isInitBufferComplete = false
 
-    // Launch FFmpeg to produce fMP4 (H.264) suitable for MSE
-    const ff = spawn(
-      'ffmpeg',
-      [
-        '-hide_banner',
-        '-y',
-        '-loglevel',
-        'error',
-        '-re', // reads at real speed (useful for "live" from a file)
-        '-rtsp_transport',
-        'tcp',
-        '-i',
-        'rtsp://admin:R45cb700@192.168.1.8:554/11',
-        // Low-latency H.264 video
-        '-c:v',
-        'libx264',
-        '-preset',
-        'veryfast',
-        '-tune',
-        'zerolatency',
-        '-g',
-        '48', // GOP size (at ~2 s if 24 fps)
-        '-keyint_min',
-        '48',
-        '-sc_threshold',
-        '0',
-        '-pix_fmt',
-        'yuv420p',
-        // No audio
-        '-an',
-        // Important for producing a fragmented MP4 file compatible with MSE
-        '-movflags',
-        'frag_keyframe+empty_moov+default_base_moof+omit_tfhd_offset',
-        '-f',
-        'mp4',
-        '-', // output to stdout
-      ],
-      { stdio: ['ignore', 'pipe', 'inherit'] }
-    )
-
     let chunkCount = 0
 
-    ff.stdout.on('data', (chunk: Buffer) => {
-      chunkCount++
+    const { process } = this.ffmpegService.convertRTSPToMp4MSEStreaming(
+      (chunk: Buffer) => {
+        chunkCount++
 
-      // Keep the first chunks for initialization (ftyp + moov)
-      // These chunks are essential for new clients
-      if (!isInitBufferComplete && chunkCount <= 10) {
-        initBuffer.push(chunk)
+        // Keep the first chunks for initialization (ftyp + moov)
+        // These chunks are essential for new clients
+        if (!isInitBufferComplete && chunkCount <= 10) {
+          initBuffer.push(chunk)
 
-        // Mark the buffer as full after a few chunks
-        if (chunkCount === 10) {
-          isInitBufferComplete = true
+          // Mark the buffer as full after a few chunks
+          if (chunkCount === 10) {
+            isInitBufferComplete = true
 
-          this.logger.debug(
-            { stream: { id: streamId } },
-            `Full init buffer (${initBuffer.length} chunks)`
-          )
+            this.logger.debug(
+              { stream: { id: streamId } },
+              `Full init buffer (${initBuffer.length} chunks)`
+            )
+          }
         }
+
+        // Broadcast the chunk to all connected clients
+        clients.forEach((client) => {
+          if (client.readyState === client.OPEN) {
+            client.send(chunk)
+          }
+        })
+      },
+      (data: Error) => {
+        this.logger.error({ err: data }, 'FFmpeg process error')
+
+        this.stopStream(streamId)
+      },
+      (code: number | null) => {
+        this.logger.debug({ code, stream: { id: streamId } }, 'FFmpeg process closed')
+
+        clients.forEach((client) => {
+          try {
+            client.close()
+          } catch {}
+        })
+
+        this.streams.delete(streamId)
       }
+    )
 
-      // Broadcast the chunk to all connected clients
-      clients.forEach((client) => {
-        if (client.readyState === client.OPEN) {
-          client.send(chunk)
-        }
-      })
-    })
-
-    ff.on('error', (error) => {
-      this.logger.error({ err: error }, 'FFmpeg process error')
-
-      this.stopStream(streamId)
-    })
-
-    ff.on('close', (code) => {
-      this.logger.debug({ code, stream: { id: streamId } }, 'FFmpeg process closed')
-
-      clients.forEach((client) => {
-        try {
-          client.close()
-        } catch {}
-      })
-
-      this.streams.delete(streamId)
-    })
-
-    return { process: ff, clients, initBuffer }
+    return { process, clients, initBuffer }
   }
 
   private stopStream(streamId: string): void {

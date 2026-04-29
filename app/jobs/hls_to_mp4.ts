@@ -4,9 +4,8 @@ import app from '@adonisjs/core/services/app'
 import { HlsToMp4JobStatuses } from '#enums/HlsToMp4JobStatuses'
 import SSEService from '#services/sse_service'
 import { createFolderIfNotExist } from '#helpers/file_helper'
-import { exec } from 'node:child_process'
-import { promisify } from 'node:util'
 import { readFileSync } from 'node:fs'
+import FFMPEGService from '#services/ffmpeg_service'
 
 export type HlsToMp4Payload = {
   cameraId: number
@@ -23,6 +22,7 @@ export default class HlsToMp4Job implements JobHandlerContract<HlsToMp4Payload> 
    */
   async handle(job: Job<HlsToMp4Payload>) {
     const sseService = await app.container.make(SSEService)
+    const fFMPEGService = await app.container.make(FFMPEGService)
 
     const camera = await Camera.findOrFail(job.data.cameraId)
     const cameraDaily = await camera
@@ -48,23 +48,7 @@ export default class HlsToMp4Job implements JobHandlerContract<HlsToMp4Payload> 
     const hlsListPath = app.makePath(mp4Folfer, 'list.txt')
     const hlsListMergedPath = app.makePath(mp4Folfer, 'all.ts')
 
-    const sh = promisify(exec)
-
-    // 1) Générer list.txt avec ../ devant chaque ligne
-    await sh(`grep -v '^#' ${hlsStreamPath} | sed "s|^|file '../|; s|$|'|" > ${hlsListPath}`)
-
-    // 2) Concaténer les TS en un seul
-    await sh(`ffmpeg -y -f concat -safe 0 -i ${hlsListPath} -c copy ${hlsListMergedPath}`, {
-      maxBuffer: 10 * 1024 * 1024,
-    })
-
-    // 3) Remux en MP4
-    await sh(
-      `ffmpeg -y -i ${hlsListMergedPath} -c copy -bsf:a aac_adtstoasc -movflags +faststart ${mp4FIlePath}`,
-      {
-        maxBuffer: 10 * 1024 * 1024,
-      }
-    )
+    await fFMPEGService.convertHLSToMp4(hlsStreamPath, hlsListPath, hlsListMergedPath, mp4FIlePath)
 
     cameraDaily.mp4Path = `/cameras/${camera.id}/${job.data.day}/mp4/output.mp4`
     cameraDaily.convertHlsToMp4JobStatus = HlsToMp4JobStatuses.DONE
