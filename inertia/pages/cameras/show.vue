@@ -136,14 +136,7 @@ onResult((data) => {
   props.camera.dailies[daily].convertHlsToMp4JobId = data.convertHlsToMp4JobId
 
   if (data.convertHlsToMp4JobStatus === HlsToMp4JobStatuses.DONE) {
-    const url = data.mp4Path
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${props.camera.label.replaceAll(' ', '_')}_${data.date}.mp4`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    window.URL.revokeObjectURL(url)
+    onClickDownloadDaily(props.camera.dailies[daily])
   }
 })
 

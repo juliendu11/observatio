@@ -24,6 +24,9 @@ const HomeController = () => import('#controllers/home_controller')
 const StreamingController = () => import('#controllers/streaming_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 
+router.where('id', router.matchers.number())
+router.where('dailyId', router.matchers.number())
+
 transmit.registerRoutes((route) => {
   if (route.getPattern() === '__transmit/subscribe') {
     route.middleware([middleware.auth()])

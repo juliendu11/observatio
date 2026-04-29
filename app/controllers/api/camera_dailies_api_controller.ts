@@ -63,9 +63,11 @@ export default class CameraDailiesAPIController {
     response.stream(stream)
   }
 
-  async download({ params, response, bouncer }: HttpContext) {
+  async download({ params, response, bouncer, request }: HttpContext) {
     const cameraId = +params.id
     const cameraDailyId = +params.dailyId
+
+    const ignoreChunkCheck = request.input('ignoreChunkCheck', false)
 
     const camera = await Camera.query().where('id', cameraId).firstOrFail()
 
@@ -79,8 +81,36 @@ export default class CameraDailiesAPIController {
       .where('id', cameraDailyId)
       .firstOrFail()
 
-    if (cameraDaily.mp4Path) {
-      return cameraDaily.mp4FileUrl
+    if (
+      cameraDaily.mp4Path &&
+      cameraDaily.convertHlsToMp4JobStatus !== HlsToMp4JobStatuses.PENDING
+    ) {
+      const hlsStreamPath = app.makePath(camera.folder, cameraDaily.date, 'stream.m3u8')
+
+      if (ignoreChunkCheck) {
+        const stream = createReadStream(cameraDaily.mp4FileUrl)
+
+        return response.stream(stream)
+      }
+
+      const lastChunk =
+        readFileSync(hlsStreamPath, 'utf-8')
+          .split('\n')
+          .filter((line) => line.trim() && !line.startsWith('#'))
+          .pop() ?? null
+
+      console.log(lastChunk)
+      console.log(cameraDaily.convertHlsToMp4LastChunk)
+
+      if (lastChunk === cameraDaily.convertHlsToMp4LastChunk) {
+        const stream = createReadStream(cameraDaily.mp4FileUrl)
+
+        return response.stream(stream)
+      }
+    }
+
+    if (cameraDaily.convertHlsToMp4JobStatus === HlsToMp4JobStatuses.PENDING) {
+      return response.noContent()
     }
 
     const newJob = await bull.dispatch(HlsToMp4Job.name, {

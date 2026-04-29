@@ -6,6 +6,7 @@ import SSEService from '#services/sse_service'
 import { createFolderIfNotExist } from '#helpers/file_helper'
 import { exec } from 'node:child_process'
 import { promisify } from 'node:util'
+import { readFileSync } from 'node:fs'
 
 export type HlsToMp4Payload = {
   cameraId: number
@@ -31,6 +32,13 @@ export default class HlsToMp4Job implements JobHandlerContract<HlsToMp4Payload> 
       .firstOrFail()
 
     const hlsStreamPath = app.makePath(camera.folder, job.data.day, 'stream.m3u8')
+
+    const m3u8Content = readFileSync(hlsStreamPath, 'utf-8')
+    const lastChunk =
+      m3u8Content
+        .split('\n')
+        .filter((line) => line.trim() && !line.startsWith('#'))
+        .pop() ?? null
 
     const mp4Folfer = app.makePath(camera.folder, job.data.day, 'mp4')
 
@@ -60,10 +68,8 @@ export default class HlsToMp4Job implements JobHandlerContract<HlsToMp4Payload> 
 
     cameraDaily.mp4Path = `/cameras/${camera.id}/${job.data.day}/mp4/output.mp4`
     cameraDaily.convertHlsToMp4JobStatus = HlsToMp4JobStatuses.DONE
+    cameraDaily.convertHlsToMp4LastChunk = lastChunk as string
     await cameraDaily.save()
-
-    const path = app.makePath('storage', cameraDaily.mp4Path)
-    cameraDaily.mp4Path = path
 
     sseService.emitConvertHlsToMp4Status(cameraDaily)
   }
