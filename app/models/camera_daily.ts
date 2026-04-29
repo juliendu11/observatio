@@ -3,8 +3,17 @@ import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import Camera from '#models/camera'
 import type { HlsToMp4JobStatusesType } from '#enums/HlsToMp4JobStatuses'
+import app from '@adonisjs/core/services/app'
 
 export default class CameraDaily extends BaseModel {
+  get mp4FileUrl() {
+    return app.makePath('storage', this.mp4Path)
+  }
+
+  get hlsFileUrl() {
+    return app.makePath('storage', this.path)
+  }
+
   @column({ isPrimary: true })
   declare id: number
 
@@ -31,6 +40,9 @@ export default class CameraDaily extends BaseModel {
 
   @column({ columnName: 'mp4_path' })
   declare mp4Path: string
+
+  @column({ columnName: 'convert_hls_to_mp4_last_chunk' })
+  declare convertHlsToMp4LastChunk: string
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

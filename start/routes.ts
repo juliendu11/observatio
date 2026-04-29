@@ -68,6 +68,10 @@ router
         .as('api.camera.daily.download')
 
       router
+        .get('/api/cameras/:id/medias', [CameraDailiesAPIController, 'show'])
+        .as('api.camera.medias.show')
+
+      router
         .delete('/api/cameras/:id/dailies/:dailyId', [CameraDailiesAPIController, 'cancelDownload'])
         .as('api.camera.daily.download.cancel')
     })

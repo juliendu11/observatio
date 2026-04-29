@@ -63,7 +63,6 @@ export default defineConfig({
       file: () => import('#providers/web_provider'),
       environment: ['web'],
     },
-    () => import('@adonisjs/drive/drive_provider'),
     () => import('@acidiney/bull-queue/queue_provider'),
     () => import('@adonisjs/transmit/transmit_provider'),
     () => import('@adonisjs/bouncer/bouncer_provider'),

@@ -114,7 +114,8 @@ const loadVideo = (link: string | undefined | number) => {
 }
 
 const createLink = (daily: any) => {
-  return `/medias${daily.path}`
+  console.log(daily)
+  return `/api/cameras/${props.camera.id}/medias?url=${daily.path}`
 }
 
 watch(dailySelected, (value) => {
