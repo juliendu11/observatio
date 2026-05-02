@@ -14,8 +14,6 @@ import { inertiaApiClient } from '@adonisjs/inertia/plugins/api_client'
 import { sessionApiClient } from '@adonisjs/session/plugins/api_client'
 import { authApiClient } from '@adonisjs/auth/plugins/api_client'
 import env from '#start/env'
-import sinon from 'sinon'
-import RecordingPubSubService from '#services/recording_pubsub_service'
 
 /**
  * This file is imported by the "bin/test.ts" entrypoint file
