@@ -257,11 +257,36 @@ export default class CameraRecorder {
   }
 
   async stop() {
-    if (this.stream) {
-      this.logger.info({ processPid: this.stream?.pid }, 'Stopping process')
+    this.blockRelaunch = true
+    this.healthChecker.stop()
+    this.fileChecker.stop()
 
-      this.blockRelaunch = false
-      this.kill()
+    if (this.dayChangeTimer) {
+      clearTimeout(this.dayChangeTimer)
+      this.dayChangeTimer = null
+    }
+
+    if (this.stream) {
+      const stream = this.stream
+      this.stream = null
+      this.isAlive = false
+
+      this.logger.info({ processPid: stream.pid }, 'Stopping process gracefully')
+
+      await new Promise<void>((resolve) => {
+        const forceKillTimeout = setTimeout(() => {
+          this.logger.warn({ processPid: stream.pid }, 'ffmpeg did not exit in time, force killing')
+          if (!stream.killed) stream.kill('SIGKILL')
+          resolve()
+        }, 10_000)
+
+        stream.once('close', () => {
+          clearTimeout(forceKillTimeout)
+          resolve()
+        })
+
+        stream.kill('SIGINT')
+      })
     }
   }
 

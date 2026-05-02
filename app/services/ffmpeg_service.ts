@@ -133,7 +133,7 @@ export default class FFMPEGService {
     ]
 
     const process = spawn('ffmpeg', args, {
-      detached: false,
+      detached: true,
     })
 
     process.on('exit', (code) => onExit(code))
