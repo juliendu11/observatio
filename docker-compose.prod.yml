@@ -32,7 +32,7 @@ services:
 
   web:
     container_name: observatio-web-prod
-    image: observatio:latest
+    image: juliendu11/observatio:latest
     restart: unless-stopped
     env_file: .env
     environment:
@@ -59,7 +59,7 @@ services:
 
   recorder:
     container_name: observatio-recorder-prod
-    image: observatio:latest
+    image: juliendu11/observatio:latest
     restart: unless-stopped
     env_file: .env
     environment:
@@ -75,7 +75,7 @@ services:
 
   queue:
     container_name: observatio-queue-prod
-    image: observatio:latest
+    image: juliendu11/observatio:latest
     restart: unless-stopped
     env_file: .env
     environment:
