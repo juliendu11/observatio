@@ -42,6 +42,7 @@ router.use([
   () => import('#middleware/initialize_bouncer_middleware'),
   () => import('#middleware/detect_user_locale_middleware'),
   () => import('#middleware/inertia_flash_middleware'),
+  () => import('#middleware/http_logger_middleware'),
 ])
 
 /**
