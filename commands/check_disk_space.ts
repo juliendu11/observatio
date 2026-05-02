@@ -1,6 +1,6 @@
 import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
-import CheckDiskSpaceService from '#services/check_disk_space_service'
+import DiskSpaceCleanupService from '#services/disk_space_cleanup_service'
 
 export default class CheckDiskSpace extends BaseCommand {
   static commandName = 'check:disk-space'
@@ -11,6 +11,12 @@ export default class CheckDiskSpace extends BaseCommand {
   }
 
   async run() {
-    await new CheckDiskSpaceService().execute()
+    try {
+      const instance = await this.app.container.make(DiskSpaceCleanupService)
+
+      await instance.execute()
+    } catch (error) {
+      console.error('Error during disk space cleanup:', error)
+    }
   }
 }

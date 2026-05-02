@@ -14,6 +14,10 @@ export default class CameraDaily extends BaseModel {
     return app.makePath('storage', this.path)
   }
 
+  get folderPath() {
+    return this.hlsFileUrl.replace('/stream.m3u8', '')
+  }
+
   @column({ isPrimary: true })
   declare id: number
 

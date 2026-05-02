@@ -10,11 +10,14 @@ import ActionNotAllowedException from '#exceptions/action_not_allowed_exception'
 import app from '@adonisjs/core/services/app'
 import { createReadStream, readFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { fileExists } from '#helpers/file_helper'
+import DiskFileService from '#services/disk_file_service'
 
 @inject()
 export default class CameraDailiesAPIController {
-  constructor(protected sseService: SSEService) {}
+  constructor(
+    protected sseService: SSEService,
+    protected diskFileService: DiskFileService
+  ) {}
 
   async show({ params, response, bouncer, request }: HttpContext) {
     const cameraId = +params.id
@@ -28,7 +31,7 @@ export default class CameraDailiesAPIController {
       throw new ActionNotAllowedException()
     }
 
-    const fileExist = await fileExists(absolutePath)
+    const fileExist = await this.diskFileService.checkFileExists(absolutePath)
     if (!fileExist) {
       return response.notFound()
     }
@@ -93,14 +96,13 @@ export default class CameraDailiesAPIController {
         return response.stream(stream)
       }
 
+      const fileData = await this.diskFileService.readFile(hlsStreamPath)
+
       const lastChunk =
-        readFileSync(hlsStreamPath, 'utf-8')
+        fileData
           .split('\n')
           .filter((line) => line.trim() && !line.startsWith('#'))
           .pop() ?? null
-
-      console.log(lastChunk)
-      console.log(cameraDaily.convertHlsToMp4LastChunk)
 
       if (lastChunk === cameraDaily.convertHlsToMp4LastChunk) {
         const stream = createReadStream(cameraDaily.mp4FileUrl)

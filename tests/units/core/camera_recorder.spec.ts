@@ -188,6 +188,73 @@ test.group('core - CameraRecorder', (group) => {
     assert.deepEqual(aliveList, [true, false])
   })
 
+  test('Should restart recording when day changes at midnight', async ({ assert, cleanup }) => {
+    const clock = sinon.useFakeTimers({
+      now: Date.now(),
+      shouldClearNativeTimers: true,
+      toFake: ['setTimeout', 'clearTimeout', 'Date'],
+    })
+    cleanup(() => clock.restore())
+
+    const camera = await CameraFactory.merge({
+      resolution: '360x480',
+      link: 'rtsp://test.com',
+    }).create()
+
+    const ffmpegServiceStub = sinon.createStubInstance(FFMPEGService)
+    const loggerStub = sinon.createStubInstance(Logger)
+    const cameraRecorderHealthCheckerStub = sinon.createStubInstance(CameraRecorderHealthChecker)
+    const cameraRecorderFileCheckerStub = sinon.createStubInstance(CameraRecorderFileChecker)
+
+    const process = {
+      kill: sinon.stub(),
+      pid: 5998,
+    }
+
+    let resolveSecondRun!: () => void
+    const secondRunStarted = new Promise<void>((resolve) => {
+      resolveSecondRun = resolve
+    })
+    let recordCallCount = 0
+    ffmpegServiceStub.recordRTSPToHLS.callsFake(() => {
+      recordCallCount++
+      if (recordCallCount === 2) {
+        setImmediate(resolveSecondRun)
+      }
+      return { args: [], process: process as any }
+    })
+
+    loggerStub.info.returns()
+    loggerStub.warn.returns()
+    loggerStub.error.returns()
+    loggerStub.child.returns(loggerStub)
+
+    const instance = new CameraRecorder(
+      camera,
+      ffmpegServiceStub,
+      loggerStub,
+      cameraRecorderHealthCheckerStub,
+      cameraRecorderFileCheckerStub
+    )
+
+    await instance.start()
+
+    assert.equal(ffmpegServiceStub.recordRTSPToHLS.callCount, 1)
+
+    const now = dayjs()
+    const msUntilMidnight = now.add(1, 'day').startOf('day').diff(now)
+
+    await clock.tickAsync(msUntilMidnight + 100)
+    await secondRunStarted
+
+    assert.equal(process.kill.callCount, 1)
+    assert.equal(cameraRecorderHealthCheckerStub.stop.callCount, 1)
+    assert.equal(cameraRecorderFileCheckerStub.stop.callCount, 1)
+    assert.equal(ffmpegServiceStub.recordRTSPToHLS.callCount, 2)
+    assert.equal(cameraRecorderHealthCheckerStub.start.callCount, 2)
+    assert.equal(cameraRecorderFileCheckerStub.start.callCount, 2)
+  })
+
   test('Should set isAlive to false when file checker send set is alive to false then emit camera:status', async ({
     assert,
     cleanup,

@@ -7,7 +7,7 @@ await queue.dispatch(
   CheckDiskSpace.name,
   {},
   {
-    repeat: { pattern: '0 */2 * * *' },
+    repeat: { pattern: '*/15 * * * *' },
     attempts: 1,
   }
 )
