@@ -1,5 +1,6 @@
 import SSEService from '#services/sse_service'
-import net from 'node:net'
+import env from '#start/env'
+import { Redis } from 'ioredis'
 import { inject } from '@adonisjs/core'
 
 export interface SystemLog {
@@ -13,21 +14,31 @@ export interface SystemLog {
 
 @inject()
 export default class SystemLogsService {
-  private tcpServer: net.Server | undefined
+  private subscriber: Redis | undefined
 
   constructor(protected sseService: SSEService) {}
 
   async start() {
-    this.tcpServer = net.createServer()
-    this.tcpServer.on('connection', (sock) => {
-      sock.on('data', (data) => {
-        this.sseService.emitLogMessage(data.toString() as any)
-      })
+    this.subscriber = new Redis({
+      host: env.get('REDIS_HOST'),
+      port: env.get('REDIS_PORT'),
+      password: env.get('REDIS_PASSWORD') || undefined,
+      retryStrategy: (times) => Math.min(times * 200, 5000),
     })
-    this.tcpServer.listen(3250, '127.0.0.1')
+
+    await this.subscriber.subscribe('system:logs')
+    this.subscriber.on('message', (_channel, message) => {
+      try {
+        const parsedMessage = JSON.parse(message)
+        const log = JSON.parse(parsedMessage.data) as SystemLog
+        this.sseService.emitLogMessage(log)
+      } catch {
+        // ignore malformed messages
+      }
+    })
   }
 
   async stop() {
-    this.tcpServer?.close()
+    await this.subscriber?.quit()
   }
 }

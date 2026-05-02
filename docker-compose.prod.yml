@@ -1,7 +1,9 @@
 services:
   mariadb:
-    image: mariadb:11
+    container_name: observatio-mariadb-prod
+    image: 'mariadb:11.8.3'
     restart: unless-stopped
+    env_file: .env
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
       MARIADB_DATABASE: ${DB_DATABASE}
@@ -17,7 +19,8 @@ services:
       start_period: 30s
 
   redis:
-    image: redis:7-alpine
+    container_name: observatio-redis-prod
+    image: 'redis:6.2-alpine'
     restart: unless-stopped
     volumes:
       - redis_data:/data
@@ -28,15 +31,20 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/observatio:latest
+    container_name: observatio-web-prod
+    image: observatio:latest
     restart: unless-stopped
     env_file: .env
     environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
       APP_TYPE: web
       DB_HOST: mariadb
       REDIS_HOST: redis
     ports:
       - "${PORT:-3333}:3333"
+    volumes:
+      - storage_data:/app/storage
     depends_on:
       mariadb:
         condition: service_healthy
@@ -50,29 +58,38 @@ services:
       start_period: 60s
 
   recorder:
-    image: ghcr.io/observatio:latest
+    container_name: observatio-recorder-prod
+    image: observatio:latest
     restart: unless-stopped
     env_file: .env
     environment:
+      NODE_ENV: production
       APP_TYPE: recorder
       DB_HOST: mariadb
       REDIS_HOST: redis
+    volumes:
+      - storage_data:/app/storage
     depends_on:
       web:
         condition: service_healthy
 
   queue:
-    image: ghcr.io/observatio:latest
+    container_name: observatio-queue-prod
+    image: observatio:latest
     restart: unless-stopped
     env_file: .env
     environment:
+      NODE_ENV: production
       APP_TYPE: job
       DB_HOST: mariadb
       REDIS_HOST: redis
     depends_on:
       web:
         condition: service_healthy
+    volumes:
+      - storage_data:/app/storage
 
 volumes:
   mariadb_data:
   redis_data:
+  storage_data:

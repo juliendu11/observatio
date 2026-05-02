@@ -32,7 +32,7 @@ See your surveillance cameras in one place.
 
 1. Clone the repository or copy `docker-compose.prod.yml`
 2. Create a `.env` file based on the `.env.example` file and fill in the required environment variables ignore
-   `APP_TYPE` and set `NODE_ENV` to `production`
+   `APP_TYPE`, set `NODE_ENV` to `production` and set `HOST` to `0.0.0.0`
 3. Run `docker compose -f ./docker-compose.prod.yml up -d` to start the application
 4. Access the application at `http://localhost:3333`
 

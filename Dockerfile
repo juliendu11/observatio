@@ -50,6 +50,7 @@ COPY --from=ffmpeg-build /usr/local/bin/ffmpeg /usr/local/bin/ffmpeg
 COPY --from=ffmpeg-build /usr/local/bin/ffprobe /usr/local/bin/ffprobe
 COPY --from=production-deps /app/node_modules /app/node_modules
 COPY --from=build /app/build /app
+RUN mkdir storage
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 EXPOSE 3333

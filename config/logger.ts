@@ -4,6 +4,7 @@ import app from '@adonisjs/core/services/app'
 import path from 'node:path'
 
 import env from '#start/env'
+import { fileURLToPath } from 'node:url'
 
 const loggerConfig = defineConfig({
   default: 'app',
@@ -41,12 +42,16 @@ const loggerConfig = defineConfig({
             },
           })
           .pushIf(!app.inTest, {
-            target: 'pino-socket',
+            target: fileURLToPath(
+              new URL(
+                `../app/transports/redis_log_transport.${app.inProduction ? 'js' : 'ts'}`,
+                import.meta.url
+              )
+            ),
             options: {
-              address: '127.0.0.1',
-              port: 3250,
-              mode: 'tcp',
-              reconnect: true,
+              host: env.get('REDIS_HOST'),
+              port: env.get('REDIS_PORT'),
+              password: env.get('REDIS_PASSWORD'),
             },
           })
           .toArray(),
