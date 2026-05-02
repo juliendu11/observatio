@@ -41,9 +41,4 @@ See your surveillance cameras in one place.
 - `tests/browser/*` are UI tests using Playwright - nice for testing render + authority-wrapper
 - `tests/functional/inertia/*` for tests permissions system with routes + HTTP request + inertia
 - `tests/functional/api/*` for tests api routes + HTTP request
-
-## TODO
-
-- [ ] Add tests hls to mp4 conversion
-- [ ] Add tests cleanup of old recordings
-- [ ] Add types
+- `tests/units/*` for tests services + utils + etc... - no HTTP request, just unit tests

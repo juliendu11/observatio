@@ -50,11 +50,12 @@ import { Link } from '@inertiajs/vue3'
 import { useI18n } from 'vue-i18n'
 import { Permissions } from '#enums/Permissions'
 import CameraAuthorityWrapper from '~/components/camera-authority-wrapper.vue'
+import { CameraForList } from '~/types'
 
 const { t } = useI18n()
 
 const props = defineProps<{
-  camera: any
+  camera: CameraForList
 }>()
 
 const videoElement = ref<HTMLVideoElement | null>(null)

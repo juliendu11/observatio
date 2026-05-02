@@ -216,12 +216,13 @@ import { useCreateForm } from '~/composables/useCreateForm'
 import { useTemplateRef, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import BaseButton from '~/components/base-button.vue'
+import { CameraForList, UserForList } from '~/types'
 
 const { t } = useI18n()
 
 const props = defineProps<{
-  users: any[]
-  cameras: any[]
+  users: UserForList[]
+  cameras: CameraForList[]
   currentUser: {
     id: number
     email: string

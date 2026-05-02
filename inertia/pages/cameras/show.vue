@@ -88,9 +88,10 @@ import { ref, useTemplateRef, watch } from 'vue'
 import { TrashIcon, ArrowDownTrayIcon, XMarkIcon } from '@heroicons/vue/24/solid'
 import { useSSESubscription } from '~/composables/useSSESubscription'
 import { HlsToMp4JobStatuses } from '#enums/HlsToMp4JobStatuses'
+import { CameraForItem } from '~/types'
 
 const props = defineProps<{
-  camera: any
+  camera: CameraForItem
 }>()
 
 const video = useTemplateRef<HTMLVideoElement>('video')

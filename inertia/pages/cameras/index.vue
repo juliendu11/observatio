@@ -1,6 +1,5 @@
 <template>
   <Head title="Cameras" />
-
   <div class="relative">
     <div class="grid md:grid-cols-2 gap-5">
       <CameraCard v-for="camera in cameras" :key="camera.id" :camera="camera" />
@@ -22,8 +21,9 @@ import { PlusIcon } from '@heroicons/vue/24/solid'
 import CameraCard from '~/components/camera-card.vue'
 import AuthorityWrapper from '~/components/authority-wrapper.vue'
 import { Permissions } from '#enums/Permissions'
+import { CameraForList } from '~/types'
 
 defineProps<{
-  cameras: any[]
+  cameras: CameraForList[]
 }>()
 </script>

@@ -31,7 +31,7 @@ export default class UsersController {
     const cameras = await Camera.query().where('organization_id', currentUser.organizationId)
 
     return inertia.render('users/index', {
-      users,
+      users: users,
       cameras,
       currentUser: {
         id: currentUser.id,
