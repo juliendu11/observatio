@@ -1,8 +1,5 @@
 import os from 'node:os'
-import { exec } from 'node:child_process'
-import { promisify } from 'node:util'
-
-const execAsync = promisify(exec)
+import { promisifyExec } from '#helpers/process_helper'
 
 export interface SystemMetrics {
   cpu: {
@@ -86,7 +83,7 @@ export default class SystemMetricsService {
 
   async getDiskMetrics(): Promise<SystemMetrics['disk']> {
     try {
-      const { stdout } = await execAsync('df -B1 / | tail -1')
+      const { stdout } = await promisifyExec('df -B1 / | tail -1')
       const parts = stdout.trim().split(/\s+/)
 
       const total = Number.parseInt(parts[1], 10)

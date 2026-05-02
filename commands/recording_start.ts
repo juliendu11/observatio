@@ -3,8 +3,8 @@ import { CommandOptions } from '@adonisjs/core/types/ace'
 import { RecorderService } from '#services/recorder_service'
 import { RECORDING_CHANNELS } from '#services/recording_pubsub_service'
 import Camera from '#models/camera'
-import { executeCommand } from '#helpers/command_helper'
 import FFMPEGService from '#services/ffmpeg_service'
+import { promisifyExec } from '#helpers/process_helper'
 
 export default class RecordingStart extends BaseCommand {
   static commandName = 'recording:start'
@@ -24,7 +24,10 @@ export default class RecordingStart extends BaseCommand {
     })
 
     try {
-      await executeCommand('killall ffmpeg')
+      const result = await promisifyExec('killall ffmpeg')
+      if (result.stderr) {
+        throw new Error(result.stderr)
+      }
     } catch (error) {
       currentLogger.info(error, 'Error killing existing ffmpeg processes on startup')
     }

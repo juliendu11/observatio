@@ -26,7 +26,7 @@ export default class MetricsSchedulerService {
       return
     }
 
-    this.currentLogger.info('Starting MetricsScheduler')
+    this.currentLogger.info({}, 'Starting MetricsScheduler')
     this.isRunning = true
 
     this.interval = setInterval(() => {

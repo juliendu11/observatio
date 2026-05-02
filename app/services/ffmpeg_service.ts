@@ -1,6 +1,6 @@
 import { inject } from '@adonisjs/core'
-import { exec, spawn } from 'node:child_process'
-import { promisify } from 'node:util'
+import { spawn } from 'node:child_process'
+import { promisifyExec } from '#helpers/process_helper'
 
 @inject()
 export default class FFMPEGService {
@@ -59,18 +59,21 @@ export default class FFMPEGService {
     hlsListMergedPath: string,
     mp4FIlePath: string
   ) {
-    const sh = promisify(exec)
-
     // 1) Générer list.txt avec ../ devant chaque ligne
-    await sh(`grep -v '^#' ${hlsStreamPath} | sed "s|^|file '../|; s|$|'|" > ${hlsListPath}`)
+    await promisifyExec(
+      `grep -v '^#' ${hlsStreamPath} | sed "s|^|file '../|; s|$|'|" > ${hlsListPath}`
+    )
 
     // 2) Concaténer les TS en un seul
-    await sh(`ffmpeg -y -f concat -safe 0 -i ${hlsListPath} -c copy ${hlsListMergedPath}`, {
-      maxBuffer: 10 * 1024 * 1024,
-    })
+    await promisifyExec(
+      `ffmpeg -y -f concat -safe 0 -i ${hlsListPath} -c copy ${hlsListMergedPath}`,
+      {
+        maxBuffer: 10 * 1024 * 1024,
+      }
+    )
 
     // 3) Remux en MP4
-    await sh(
+    await promisifyExec(
       `ffmpeg -y -i ${hlsListMergedPath} -c copy -bsf:a aac_adtstoasc -movflags +faststart ${mp4FIlePath}`,
       {
         maxBuffer: 10 * 1024 * 1024,

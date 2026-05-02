@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process'
+import { promisifyExec } from '#helpers/process_helper'
 
 export type CameraRecorderHealthCheckerConfig = {
   interval?: {
@@ -50,19 +50,16 @@ export default class CameraRecorderHealthChecker {
     }
   }
 
-  private runCommand(): Promise<boolean> {
-    return new Promise((resolve) => {
-      exec(
-        `curl --head --silent --output /dev/null --show-error --fail --connect-timeout ${this.connectTimeout} -i -X OPTIONS ${this.rtspLink}`,
-        (err) => {
-          if (err) {
-            resolve(false)
-            return
-          }
-          resolve(true)
-        }
+  private async runCommand(): Promise<boolean> {
+    try {
+      const result = await promisifyExec(
+        `curl --head --silent --output /dev/null --show-error --fail --connect-timeout ${this.connectTimeout} -i -X OPTIONS ${this.rtspLink}`
       )
-    })
+
+      return !result.stderr
+    } catch {
+      return false
+    }
   }
 
   start() {

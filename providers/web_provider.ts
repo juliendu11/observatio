@@ -35,8 +35,10 @@ export default class WebProvider {
       return new SSEService()
     })
 
-    this.app.container.singleton(SystemLogsService, () => {
-      return new SystemLogsService()
+    this.app.container.singleton(SystemLogsService, async (resolver) => {
+      const sseService = await resolver.make(SSEService)
+
+      return new SystemLogsService(sseService)
     })
 
     this.app.container.singleton(TelegramNotificationService, () => {

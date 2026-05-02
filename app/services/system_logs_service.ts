@@ -1,6 +1,6 @@
 import SSEService from '#services/sse_service'
 import net from 'node:net'
-import app from '@adonisjs/core/services/app'
+import { inject } from '@adonisjs/core'
 
 export interface SystemLog {
   level: number
@@ -11,16 +11,17 @@ export interface SystemLog {
   name?: string
 }
 
+@inject()
 export default class SystemLogsService {
   private tcpServer: net.Server | undefined
 
-  async start() {
-    const sseService = await app.container.make(SSEService)
+  constructor(protected sseService: SSEService) {}
 
+  async start() {
     this.tcpServer = net.createServer()
-    this.tcpServer.on('connection', function (sock) {
-      sock.on('data', function (data) {
-        sseService.emitLogMessage(data.toString() as any)
+    this.tcpServer.on('connection', (sock) => {
+      sock.on('data', (data) => {
+        this.sseService.emitLogMessage(data.toString() as any)
       })
     })
     this.tcpServer.listen(3250, '127.0.0.1')
