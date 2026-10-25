@@ -1,7 +1,7 @@
-FROM node:22.16.0-alpine3.22 AS base
+FROM node:24.22.1-alpine3.23 AS base
 
 # FFmpeg build stage
-FROM alpine:3.22 AS ffmpeg-build
+FROM alpine:3.23 AS ffmpeg-build
 RUN apk add --no-cache \
     build-base \
     nasm \
