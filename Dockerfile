@@ -25,12 +25,14 @@ RUN wget https://ffmpeg.org/releases/ffmpeg-7.1.2.tar.bz2 && \
 FROM base AS deps
 WORKDIR /app
 ADD package.json package-lock.json ./
+COPY patches ./patches
 RUN npm ci
 
 # Production only deps stage
 FROM base AS production-deps
 WORKDIR /app
 ADD package.json package-lock.json ./
+COPY patches ./patches
 RUN npm ci --omit=dev
 
 # Build stage

@@ -13,7 +13,8 @@
     "test": "node ace test",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "postinstall": "patch-package"
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",
@@ -94,6 +95,7 @@
     "luxon": "^3.7.2",
     "mysql2": "^3.16.0",
     "node-telegram-bot-api": "^0.66.0",
+    "patch-package": "^8.0.1",
     "pino-pretty": "^13.0.0",
     "pino-roll": "^4.0.0",
     "pretty-hrtime": "^1.0.3",
